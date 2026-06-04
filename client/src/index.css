@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Google Fonts for Dark Cinema Minimalism */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -43,74 +46,44 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
+  /* Dark Cinema Minimalism - Premium Streaming Aesthetic */
+  --primary: #E50914;  /* Crimson Red - Netflix-inspired */
+  --primary-foreground: #FFFFFF;
+  --sidebar-primary: #0066FF;  /* Electric Blue */
+  --sidebar-primary-foreground: #FFFFFF;
+  --chart-1: #E50914;
+  --chart-2: #0066FF;
+  --chart-3: #00D9FF;
+  --chart-4: #FF6B35;
+  --chart-5: #FFD700;
+  --radius: 0.5rem;  /* Slightly tighter radius for cinema feel */
+  --background: #0F0F0F;  /* Deep charcoal black */
+  --foreground: #E8E8E8;  /* Off-white for reduced eye strain */
+  --card: #1A1A1A;  /* Slightly lighter black for cards */
+  --card-foreground: #E8E8E8;
+  --popover: #1A1A1A;
+  --popover-foreground: #E8E8E8;
+  --secondary: #2D2D2D;  /* Dark gray */
+  --secondary-foreground: #E8E8E8;
+  --muted: #404040;  /* Muted dark gray */
+  --muted-foreground: #A0A0A0;
+  --accent: #E50914;  /* Crimson red accent */
+  --accent-foreground: #FFFFFF;
+  --destructive: #FF4136;  /* Bright red */
+  --destructive-foreground: #FFFFFF;
+  --border: #2D2D2D;  /* Dark border */
+  --input: #2D2D2D;  /* Dark input background */
+  --ring: #0066FF;  /* Electric blue focus ring */
+  --sidebar: #0F0F0F;
+  --sidebar-foreground: #E8E8E8;
+  --sidebar-accent: #E50914;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #2D2D2D;
+  --sidebar-ring: #0066FF;
 }
 
 .dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  /* Dark Cinema Minimalism is the default - no override needed */
 }
 
 @layer base {
@@ -119,6 +92,22 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+  }
+  .text-display {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .text-heading {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -134,6 +123,92 @@
 }
 
 @layer components {
+  /* Dark Cinema Minimalism - Custom Components */
+  
+  /* Glowing accent borders on hover */
+  .glow-accent {
+    @apply transition-all duration-300;
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0);
+  }
+  
+  .glow-accent:hover {
+    box-shadow: 0 0 20px 0 rgba(229, 9, 20, 0.4);
+  }
+  
+  /* Channel card base styles */
+  .channel-card {
+    @apply relative overflow-hidden rounded-lg bg-card border border-border transition-all duration-300;
+  }
+  
+  .channel-card:hover {
+    @apply scale-105 border-accent;
+    box-shadow: 0 20px 40px rgba(229, 9, 20, 0.2), 0 0 30px rgba(0, 102, 255, 0.1);
+  }
+  
+  /* Gradient overlay for channel cards */
+  .gradient-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 transition-opacity duration-300;
+  }
+  
+  .channel-card:hover .gradient-overlay {
+    @apply opacity-100;
+  }
+  
+  /* Play button animation */
+  .play-button {
+    @apply absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300;
+  }
+  
+  .channel-card:hover .play-button {
+    @apply opacity-100;
+  }
+  
+  /* Live badge pulse animation */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(229, 9, 20, 0);
+    }
+  }
+  
+  .live-badge {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-semibold;
+    animation: pulse-glow 2s infinite;
+  }
+  
+  /* Category tab underline animation */
+  .category-tab {
+    @apply relative pb-2 transition-colors duration-200;
+  }
+  
+  .category-tab::after {
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-accent transition-all duration-300;
+    content: '';
+  }
+  
+  .category-tab.active::after,
+  .category-tab:hover::after {
+    @apply w-full;
+  }
+  
+  /* Stagger animation for list items */
+  @keyframes stagger-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .stagger-item {
+    animation: stagger-in 0.5s ease-out forwards;
+  }
+  
   /**
    * Custom container utility that centers content and adds responsive padding.
    *
@@ -173,5 +248,16 @@
       padding-right: 2rem;
       max-width: 1280px; /* Standard content width */
     }
+  }
+}
+
+/* Reduce motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
