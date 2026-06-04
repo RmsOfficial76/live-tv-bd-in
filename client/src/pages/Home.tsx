@@ -51,8 +51,34 @@ export default function Home() {
         const data = await response.json();
         setChannels(data);
 
-        // Set first category and channel as selected
-        const firstCategory = Object.keys(data)[0];
+        // Load favorites from LocalStorage
+        const saved = localStorage.getItem('livetv_favorites');
+        if (saved) {
+          const favList = JSON.parse(saved);
+          data['Favorites'] = data['Favorites'] || [];
+          // Find favorite channels from all categories
+          for (const category in data) {
+            if (category !== 'Favorites') {
+              data[category] = data[category].filter((ch: Channel) => {
+                if (favList.includes(ch.name)) {
+                  data['Favorites'].push(ch);
+                  return true;
+                }
+                return true;
+              });
+            }
+          }
+          // Remove duplicates from Favorites
+          data['Favorites'] = Array.from(new Map(data['Favorites'].map((ch: Channel) => [ch.name, ch])).values());
+        }
+        
+        setChannels(data);
+
+        // Set first category (Favorites or Bangla) and channel as selected
+        let firstCategory = 'Bangla';
+        if (data['Favorites'] && data['Favorites'].length > 0) {
+          firstCategory = 'Favorites';
+        }
         setActiveCategory(firstCategory);
         if (data[firstCategory] && data[firstCategory].length > 0) {
           setSelectedChannel(data[firstCategory][0]);
@@ -86,6 +112,23 @@ export default function Home() {
     }
     setFavorites(newFavorites);
     localStorage.setItem('livetv_favorites', JSON.stringify(Array.from(newFavorites)));
+    
+    // Update Favorites category
+    const updatedChannels = { ...channels };
+    updatedChannels['Favorites'] = [];
+    
+    // Collect all favorite channels from all categories
+    for (const category in updatedChannels) {
+      if (category !== 'Favorites') {
+        updatedChannels[category].forEach((ch: Channel) => {
+          if (newFavorites.has(ch.name)) {
+            updatedChannels['Favorites'].push(ch);
+          }
+        });
+      }
+    }
+    
+    setChannels(updatedChannels);
   };
 
   const selectChannel = (channel: Channel, category: string) => {
