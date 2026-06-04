@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Play, Menu, Search, Volume2 } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Play, Search, Volume2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -16,19 +16,20 @@ interface ChannelsData {
 
 /**
  * Dark Cinema Minimalism Design
+ * - Horizontal category tabs (like reference IPTV app)
+ * - In-place video player (no page redirect)
+ * - Scrollable channel list below
  * - Deep black background (#0F0F0F) for premium streaming feel
  * - Crimson red (#E50914) and electric blue (#0066FF) accents
- * - Smooth animations and glowing effects on hover
- * - Content-first layout with minimal UI chrome
  */
 export default function Home() {
   const [channels, setChannels] = useState<ChannelsData>({});
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('Bangla');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const tabScrollRef = useRef<HTMLDivElement>(null);
 
   // Load channels data
   useEffect(() => {
@@ -117,6 +118,16 @@ export default function Home() {
     );
   };
 
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabScrollRef.current) {
+      const scrollAmount = 300;
+      tabScrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -133,17 +144,9 @@ export default function Home() {
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="container flex items-center justify-between py-4 gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
-            >
-              <Menu className="w-5 h-5 text-accent" />
-            </button>
-            <h1 className="text-2xl font-bold">
-              <span className="text-accent">Live</span> <span className="text-foreground">TV</span>
-            </h1>
-          </div>
+          <h1 className="text-2xl font-bold">
+            <span className="text-accent">Live</span> <span className="text-foreground">TV</span>
+          </h1>
           
           {/* Search Bar */}
           <div className="flex-1 max-w-md">
@@ -177,61 +180,80 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - Categories */}
-        <aside
-          className={`${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } lg:translate-x-0 absolute lg:relative w-64 bg-card border-r border-border overflow-y-auto transition-transform duration-300 z-40 h-full`}
-        >
-          <div className="p-4 space-y-2">
-            <h2 className="text-heading text-foreground mb-4">ক্যাটাগরি</h2>
+      {/* Category Tabs - Horizontal Scrollable */}
+      <div className="bg-card border-b border-border sticky top-16 z-40">
+        <div className="relative flex items-center">
+          {/* Left Scroll Button */}
+          <button
+            onClick={() => scrollTabs('left')}
+            className="absolute left-0 z-10 p-2 bg-gradient-to-r from-card to-transparent hover:from-secondary transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5 text-accent" />
+          </button>
+
+          {/* Scrollable Tabs Container */}
+          <div
+            ref={tabScrollRef}
+            className="flex overflow-x-auto scrollbar-hide px-12 py-3 gap-2"
+            style={{ scrollBehavior: 'smooth' }}
+          >
             {sortedCategories.map((category) => (
               <button
                 key={category}
                 onClick={() => {
                   setActiveCategory(category);
                   setSearchQuery('');
-                  setSidebarOpen(false);
+                  // Select first channel of category
+                  if (channels[category] && channels[category].length > 0) {
+                    setSelectedChannel(channels[category][0]);
+                  }
                 }}
-                className={`category-tab w-full text-left px-4 py-2 rounded-lg transition-all duration-200 ${
+                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 font-medium text-sm ${
                   activeCategory === category
-                    ? 'active bg-accent text-accent-foreground font-semibold'
-                    : 'text-foreground hover:bg-secondary'
+                    ? 'bg-accent text-accent-foreground shadow-lg shadow-accent/50'
+                    : 'bg-secondary text-foreground hover:bg-muted'
                 }`}
               >
-                <span>{category}</span>
-                <span className="ml-2 text-xs opacity-70">
-                  ({channels[category]?.length || 0})
-                </span>
+                {category}
+                <span className="ml-2 text-xs opacity-75">({channels[category]?.length || 0})</span>
               </button>
             ))}
           </div>
-        </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          {/* Featured Channel */}
-          {selectedChannel && (
-            <div className="relative h-80 sm:h-96 bg-secondary overflow-hidden group">
-              {/* Channel Logo Background */}
-              <div className="absolute inset-0 opacity-10">
-                <ImageWithFallback
-                  src={selectedChannel.logo}
-                  alt={selectedChannel.name}
-                  className="w-full h-full object-cover blur-xl"
-                />
-              </div>
+          {/* Right Scroll Button */}
+          <button
+            onClick={() => scrollTabs('right')}
+            className="absolute right-0 z-10 p-2 bg-gradient-to-l from-card to-transparent hover:from-secondary transition-colors"
+          >
+            <ChevronRight className="w-5 h-5 text-accent" />
+          </button>
+        </div>
+      </div>
 
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent"></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+      {/* Main Content - Scrollable */}
+      <main className="flex-1 overflow-y-auto">
+        {/* Video Player Section */}
+        {selectedChannel && (
+          <div className="sticky top-0 z-30 bg-secondary">
+            <div className="container py-4">
+              {/* Video Player */}
+              <div className="relative bg-black rounded-lg overflow-hidden aspect-video mb-4">
+                {/* Channel Logo Background */}
+                <div className="absolute inset-0 opacity-20">
+                  <ImageWithFallback
+                    src={selectedChannel.logo}
+                    alt={selectedChannel.name}
+                    className="w-full h-full object-cover blur-xl"
+                  />
+                </div>
 
-              {/* Content */}
-              <div className="relative h-full flex items-center">
-                <div className="container flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
-                  {/* Logo */}
-                  <div className="flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40 rounded-lg overflow-hidden bg-card border-2 border-accent shadow-2xl">
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black"></div>
+
+                {/* Player Content */}
+                <div className="relative h-full flex flex-col items-center justify-center">
+                  {/* Channel Logo */}
+                  <div className="w-24 h-24 rounded-lg overflow-hidden bg-card border-2 border-accent mb-4 shadow-lg">
                     <ImageWithFallback
                       src={selectedChannel.logo}
                       alt={selectedChannel.name}
@@ -239,92 +261,110 @@ export default function Home() {
                     />
                   </div>
 
-                  {/* Info */}
-                  <div className="flex-1 text-center sm:text-left">
-                    <div className="live-badge mb-4 justify-center sm:justify-start">
+                  {/* Channel Info */}
+                  <div className="text-center mb-6">
+                    <div className="live-badge mb-3 justify-center">
                       <div className="w-2 h-2 rounded-full bg-accent-foreground animate-pulse"></div>
                       লাইভ
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{selectedChannel.name}</h2>
-                    <p className="text-muted-foreground mb-6">{selectedChannel.group}</p>
-                    <Button
-                      size="lg"
-                      className="bg-accent hover:bg-primary text-accent-foreground gap-2"
-                      onClick={() => {
-                        if (selectedChannel.url) {
-                          window.open(selectedChannel.url, '_blank');
-                        }
-                      }}
-                    >
-                      <Play className="w-5 h-5" />
-                      এখনই দেখুন
-                    </Button>
+                    <h2 className="text-3xl font-bold text-foreground mb-2">{selectedChannel.name}</h2>
+                    <p className="text-muted-foreground">{selectedChannel.group}</p>
+                  </div>
+
+                  {/* Play Button */}
+                  <Button
+                    size="lg"
+                    className="bg-accent hover:bg-primary text-accent-foreground gap-2 mb-4"
+                    onClick={() => {
+                      if (selectedChannel.url) {
+                        window.open(selectedChannel.url, '_blank');
+                      }
+                    }}
+                  >
+                    <Play className="w-5 h-5" />
+                    এখনই দেখুন
+                  </Button>
+                </div>
+              </div>
+
+              {/* Channel Details Card */}
+              <div className="bg-card border border-border rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-foreground">{selectedChannel.name}</h3>
+                    <p className="text-sm text-muted-foreground">{selectedChannel.group}</p>
+                  </div>
+                  <div className="live-badge">
+                    <div className="w-2 h-2 rounded-full bg-accent-foreground animate-pulse"></div>
+                    লাইভ
                   </div>
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Channels Grid */}
-          <div className="container py-8">
-            <h3 className="text-heading text-foreground mb-6">
-              {activeCategory} চ্যানেল ({filteredChannels.length})
-            </h3>
-
-            {filteredChannels.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">কোনো চ্যানেল পাওয়া যাচ্ছে না</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {filteredChannels.map((channel, index) => (
-                  <div
-                    key={`${channel.name}-${index}`}
-                    onClick={() => setSelectedChannel(channel)}
-                    className="channel-card cursor-pointer group"
-                    style={{
-                      animationDelay: `${index * 30}ms`,
-                    }}
-                  >
-                    {/* Channel Logo */}
-                    <div className="aspect-square overflow-hidden bg-secondary">
-                      <ImageWithFallback
-                        src={channel.logo}
-                        alt={channel.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                    </div>
-
-                    {/* Gradient Overlay */}
-                    <div className="gradient-overlay"></div>
-
-                    {/* Play Button */}
-                    <div className="play-button">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (channel.url) {
-                            window.open(channel.url, '_blank');
-                          }
-                        }}
-                        className="p-3 rounded-full bg-accent text-accent-foreground hover:scale-110 transition-transform duration-300"
-                      >
-                        <Play className="w-6 h-6" />
-                      </button>
-                    </div>
-
-                    {/* Channel Info */}
-                    <div className="p-3 bg-card">
-                      <p className="text-xs font-semibold text-foreground truncate">{channel.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{channel.group}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
-        </main>
-      </div>
+        )}
+
+        {/* Channels Grid */}
+        <div className="container py-8">
+          <h3 className="text-heading text-foreground mb-6">
+            {activeCategory} চ্যানেল ({filteredChannels.length})
+          </h3>
+
+          {filteredChannels.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">কোনো চ্যানেল পাওয়া যাচ্ছে না</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {filteredChannels.map((channel, index) => (
+                <div
+                  key={`${channel.name}-${index}`}
+                  onClick={() => setSelectedChannel(channel)}
+                  className={`channel-card cursor-pointer group ${
+                    selectedChannel?.name === channel.name ? 'ring-2 ring-accent' : ''
+                  }`}
+                  style={{
+                    animationDelay: `${index * 30}ms`,
+                  }}
+                >
+                  {/* Channel Logo */}
+                  <div className="aspect-square overflow-hidden bg-secondary">
+                    <ImageWithFallback
+                      src={channel.logo}
+                      alt={channel.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+
+                  {/* Gradient Overlay */}
+                  <div className="gradient-overlay"></div>
+
+                  {/* Play Button */}
+                  <div className="play-button">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (channel.url) {
+                          window.open(channel.url, '_blank');
+                        }
+                      }}
+                      className="p-3 rounded-full bg-accent text-accent-foreground hover:scale-110 transition-transform duration-300"
+                    >
+                      <Play className="w-6 h-6" />
+                    </button>
+                  </div>
+
+                  {/* Channel Info */}
+                  <div className="p-3 bg-card">
+                    <p className="text-xs font-semibold text-foreground truncate">{channel.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{channel.group}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
 
       {/* Footer */}
       <footer className="bg-card border-t border-border py-6 mt-auto">
