@@ -1,14 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
-import { Play, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Search, ChevronLeft, ChevronRight, Star, Home as HomeIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import HLSPlayer from '@/components/HLSPlayer';
+import { useLocation } from 'wouter';
 
 interface Channel {
   name: string;
   logo: string;
   group: string;
   url: string;
+  popularity?: number;
 }
 
 interface ChannelsData {
@@ -17,51 +19,45 @@ interface ChannelsData {
 
 /**
  * Dark Cinema Minimalism Design
- * - Horizontal category tabs (like reference IPTV app)
- * - In-place HLS video player (no page redirect)
- * - Scrollable channel list below
- * - Direct streaming with HLS.js
+ * - Favorites section with LocalStorage
+ * - Organized sections: Bangladeshi, Hindi Entertainment, Others
+ * - Popular channels ranked first
+ * - Auto-scroll to player on channel selection
+ * - Home logo link
  */
 export default function Home() {
   const [channels, setChannels] = useState<ChannelsData>({});
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>('Bangla');
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-  const [playbackError, setPlaybackError] = useState<string | null>(null);
-  const tabScrollRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<HTMLDivElement>(null);
+  const [, setLocation] = useLocation();
+
+  // Load favorites from LocalStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('livetv_favorites');
+    if (saved) {
+      setFavorites(new Set(JSON.parse(saved)));
+    }
+  }, []);
 
   // Load channels data
   useEffect(() => {
     const loadChannels = async () => {
       try {
-        // Try to load India channels first (more channels), fallback to original
-        let data;
-        try {
-          const response = await fetch('/india_channels.json');
-          if (response.ok) {
-            data = await response.json();
-          } else {
-            throw new Error('India channels not found');
-          }
-        } catch (e) {
-          // Fallback to original channels
-          const response = await fetch('/channels.json');
-          data = await response.json();
-        }
-
+        const response = await fetch('/channels.json');
+        const data = await response.json();
         setChannels(data);
 
         // Set first channel as selected
         const firstCategory = Object.keys(data)[0];
         if (data[firstCategory] && data[firstCategory].length > 0) {
           setSelectedChannel(data[firstCategory][0]);
-          setActiveCategory(firstCategory);
         }
       } catch (error) {
         console.error('Failed to load channels:', error);
-        setPlaybackError('চ্যানেল লোড করতে ব্যর্থ');
       } finally {
         setLoading(false);
       }
@@ -69,35 +65,6 @@ export default function Home() {
 
     loadChannels();
   }, []);
-
-  // Get filtered channels for current category
-  const currentChannels = channels[activeCategory] || [];
-  const filteredChannels = currentChannels.filter(channel =>
-    channel.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Get all categories sorted by priority
-  const categoryOrder = [
-    'Bangla', 'Bangladesh', 'Indian Bangla',
-    'India', 'Hindi',
-    'Sports', 'IPL-2026', 'PSL-2026',
-    'News', 'News (AR)', 'News (ES)',
-    'Entertainment', 'Drama',
-    'Islamic', 'Religious',
-    'Kids', 'Animation',
-    'Music',
-    'Movies', 'Movie',
-    'English', 'General',
-  ];
-
-  const sortedCategories = Object.keys(channels).sort((a, b) => {
-    const aIndex = categoryOrder.indexOf(a);
-    const bIndex = categoryOrder.indexOf(b);
-    if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
-    if (aIndex === -1) return 1;
-    if (bIndex === -1) return -1;
-    return aIndex - bIndex;
-  });
 
   const handleImageError = (logoUrl: string) => {
     setImageErrors(prev => new Set(prev).add(logoUrl));
@@ -107,6 +74,25 @@ export default function Home() {
     const colors = ['#E50914', '#0066FF', '#00D9FF', '#FF6B35', '#FFD700'];
     const hash = text.charCodeAt(0) + text.charCodeAt(text.length - 1);
     return colors[hash % colors.length];
+  };
+
+  const toggleFavorite = (channelName: string) => {
+    const newFavorites = new Set(favorites);
+    if (newFavorites.has(channelName)) {
+      newFavorites.delete(channelName);
+    } else {
+      newFavorites.add(channelName);
+    }
+    setFavorites(newFavorites);
+    localStorage.setItem('livetv_favorites', JSON.stringify(Array.from(newFavorites)));
+  };
+
+  const selectChannel = (channel: Channel) => {
+    setSelectedChannel(channel);
+    // Auto-scroll to player
+    setTimeout(() => {
+      playerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const ImageWithFallback = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
@@ -133,14 +119,77 @@ export default function Home() {
     );
   };
 
-  const scrollTabs = (direction: 'left' | 'right') => {
-    if (tabScrollRef.current) {
-      const scrollAmount = 300;
-      tabScrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
+  const ChannelCard = ({ channel, isFavorite }: { channel: Channel; isFavorite: boolean }) => (
+    <div
+      onClick={() => selectChannel(channel)}
+      className={`channel-card cursor-pointer group relative ${
+        selectedChannel?.name === channel.name ? 'ring-2 ring-accent' : ''
+      }`}
+    >
+      {/* Channel Logo */}
+      <div className="aspect-square overflow-hidden bg-secondary">
+        <ImageWithFallback
+          src={channel.logo}
+          alt={channel.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+        />
+      </div>
+
+      {/* Gradient Overlay */}
+      <div className="gradient-overlay"></div>
+
+      {/* Favorite Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleFavorite(channel.name);
+        }}
+        className="absolute top-2 right-2 p-2 rounded-full bg-black/50 hover:bg-accent transition-colors"
+      >
+        <Star
+          className="w-4 h-4"
+          fill={isFavorite ? '#E50914' : 'none'}
+          color={isFavorite ? '#E50914' : '#fff'}
+        />
+      </button>
+
+      {/* Play Button */}
+      <div className="play-button">
+        <button className="p-3 rounded-full bg-accent text-accent-foreground hover:scale-110 transition-transform duration-300">
+          <Play className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Channel Info */}
+      <div className="p-3 bg-card">
+        <p className="text-xs font-semibold text-foreground truncate">{channel.name}</p>
+        <p className="text-xs text-muted-foreground truncate">{channel.group}</p>
+      </div>
+    </div>
+  );
+
+  const ChannelSection = ({ title, channelsList }: { title: string; channelsList: Channel[] }) => {
+    const filtered = channelsList.filter(ch =>
+      ch.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (filtered.length === 0) return null;
+
+    return (
+      <div className="mb-12">
+        <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+          <div className="w-1 h-6 bg-accent rounded"></div>
+          {title} ({filtered.length})
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {filtered.map((channel, index) => (
+            <div key={`${channel.name}-${index}`} style={{ animationDelay: `${index * 30}ms` }}>
+              <ChannelCard channel={channel} isFavorite={favorites.has(channel.name)} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -154,14 +203,30 @@ export default function Home() {
     );
   }
 
+  // Get favorite channels
+  const favoriteChannels = Object.values(channels)
+    .flat()
+    .filter(ch => favorites.has(ch.name))
+    .sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="container flex items-center justify-between py-4 gap-4">
-          <h1 className="text-2xl font-bold">
-            <span className="text-accent">Live</span> <span className="text-foreground">TV</span>
-          </h1>
+          {/* Home Logo Link */}
+          <button
+            onClick={() => setLocation('/')}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            title="Go to Home"
+          >
+            <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+              <HomeIcon className="w-6 h-6 text-accent-foreground" />
+            </div>
+            <h1 className="text-2xl font-bold hidden sm:block">
+              <span className="text-accent">Live</span> <span className="text-foreground">TV</span>
+            </h1>
+          </button>
 
           {/* Search Bar */}
           <div className="flex-1 max-w-md">
@@ -185,7 +250,6 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-accent hover:text-primary transition-colors"
-              title="Facebook"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -195,62 +259,11 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Category Tabs - Horizontal Scrollable */}
-      <div className="bg-card border-b border-border sticky top-16 z-40">
-        <div className="relative flex items-center">
-          {/* Left Scroll Button */}
-          <button
-            onClick={() => scrollTabs('left')}
-            className="absolute left-0 z-10 p-2 bg-gradient-to-r from-card to-transparent hover:from-secondary transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 text-accent" />
-          </button>
-
-          {/* Scrollable Tabs Container */}
-          <div
-            ref={tabScrollRef}
-            className="flex overflow-x-auto scrollbar-hide px-12 py-3 gap-2"
-            style={{ scrollBehavior: 'smooth' }}
-          >
-            {sortedCategories.map((category) => (
-              <button
-                key={category}
-                onClick={() => {
-                  setActiveCategory(category);
-                  setSearchQuery('');
-                  setPlaybackError(null);
-                  // Select first channel of category
-                  if (channels[category] && channels[category].length > 0) {
-                    setSelectedChannel(channels[category][0]);
-                  }
-                }}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 font-medium text-sm ${
-                  activeCategory === category
-                    ? 'bg-accent text-accent-foreground shadow-lg shadow-accent/50'
-                    : 'bg-secondary text-foreground hover:bg-muted'
-                }`}
-              >
-                {category}
-                <span className="ml-2 text-xs opacity-75">({channels[category]?.length || 0})</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Right Scroll Button */}
-          <button
-            onClick={() => scrollTabs('right')}
-            className="absolute right-0 z-10 p-2 bg-gradient-to-l from-card to-transparent hover:from-secondary transition-colors"
-          >
-            <ChevronRight className="w-5 h-5 text-accent" />
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content - Scrollable */}
+      {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         {/* Video Player Section */}
         {selectedChannel && (
-          <div className="sticky top-0 z-30 bg-secondary">
+          <div ref={playerRef} className="sticky top-0 z-30 bg-secondary">
             <div className="container py-4">
               {/* HLS Video Player */}
               <div className="relative bg-black rounded-lg overflow-hidden aspect-video mb-4 border border-border">
@@ -260,96 +273,57 @@ export default function Home() {
                     poster={selectedChannel.logo}
                     autoplay={true}
                     controls={true}
-                    className="w-full h-full"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center flex-col gap-4">
-                    <div className="text-center">
-                      <p className="text-foreground mb-2">স্ট্রিম উপলব্ধ নেই</p>
-                      <p className="text-muted-foreground text-sm">{selectedChannel.name}</p>
-                    </div>
+                    <p className="text-foreground">স্ট্রিম উপলব্ধ নেই</p>
                   </div>
                 )}
               </div>
 
               {/* Channel Details Card */}
-              <div className="bg-card border border-border rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground">{selectedChannel.name}</h3>
-                    <p className="text-sm text-muted-foreground">{selectedChannel.group}</p>
-                  </div>
-                  <div className="live-badge">
-                    <div className="w-2 h-2 rounded-full bg-accent-foreground animate-pulse"></div>
-                    লাইভ
-                  </div>
+              <div className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-foreground">{selectedChannel.name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedChannel.group}</p>
                 </div>
+                <button
+                  onClick={() => toggleFavorite(selectedChannel.name)}
+                  className="p-3 rounded-full hover:bg-secondary transition-colors"
+                >
+                  <Star
+                    className="w-6 h-6"
+                    fill={favorites.has(selectedChannel.name) ? '#E50914' : 'none'}
+                    color={favorites.has(selectedChannel.name) ? '#E50914' : '#888'}
+                  />
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Channels Grid */}
+        {/* Channels Sections */}
         <div className="container py-8">
-          <h3 className="text-heading text-foreground mb-6">
-            {activeCategory} চ্যানেল ({filteredChannels.length})
-          </h3>
-
-          {filteredChannels.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">কোনো চ্যানেল পাওয়া যাচ্ছে না</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {filteredChannels.map((channel, index) => (
-                <div
-                  key={`${channel.name}-${index}`}
-                  onClick={() => {
-                    setSelectedChannel(channel);
-                    setPlaybackError(null);
-                  }}
-                  className={`channel-card cursor-pointer group ${
-                    selectedChannel?.name === channel.name ? 'ring-2 ring-accent' : ''
-                  }`}
-                  style={{
-                    animationDelay: `${index * 30}ms`,
-                  }}
-                >
-                  {/* Channel Logo */}
-                  <div className="aspect-square overflow-hidden bg-secondary">
-                    <ImageWithFallback
-                      src={channel.logo}
-                      alt={channel.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                  </div>
-
-                  {/* Gradient Overlay */}
-                  <div className="gradient-overlay"></div>
-
-                  {/* Play Button */}
-                  <div className="play-button">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedChannel(channel);
-                        setPlaybackError(null);
-                      }}
-                      className="p-3 rounded-full bg-accent text-accent-foreground hover:scale-110 transition-transform duration-300"
-                    >
-                      <Play className="w-6 h-6" />
-                    </button>
-                  </div>
-
-                  {/* Channel Info */}
-                  <div className="p-3 bg-card">
-                    <p className="text-xs font-semibold text-foreground truncate">{channel.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{channel.group}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Favorites Section */}
+          {favoriteChannels.length > 0 && (
+            <ChannelSection title="⭐ আমার পছন্দের চ্যানেল" channelsList={favoriteChannels} />
           )}
+
+          {/* Bangladeshi Channels */}
+          {channels['Bangladeshi'] && (
+            <ChannelSection title="🇧🇩 বাংলাদেশী চ্যানেল" channelsList={channels['Bangladeshi']} />
+          )}
+
+          {/* Hindi Entertainment */}
+          {channels['Hindi Entertainment'] && (
+            <ChannelSection title="🇮🇳 হিন্দি বিনোদন" channelsList={channels['Hindi Entertainment']} />
+          )}
+
+          {/* Other Categories */}
+          {Object.entries(channels).map(([category, channelsList]) => {
+            if (['Bangladeshi', 'Hindi Entertainment', 'Favorites'].includes(category)) return null;
+            return <ChannelSection key={category} title={category} channelsList={channelsList} />;
+          })}
         </div>
       </main>
 
