@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import { Play, Search, Volume2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HLSPlayer from '@/components/HLSPlayer';
 
 interface Channel {
   name: string;
@@ -17,10 +18,9 @@ interface ChannelsData {
 /**
  * Dark Cinema Minimalism Design
  * - Horizontal category tabs (like reference IPTV app)
- * - In-place video player (no page redirect)
+ * - In-place HLS video player (no page redirect)
  * - Scrollable channel list below
- * - Deep black background (#0F0F0F) for premium streaming feel
- * - Crimson red (#E50914) and electric blue (#0066FF) accents
+ * - Direct streaming with HLS.js
  */
 export default function Home() {
   const [channels, setChannels] = useState<ChannelsData>({});
@@ -29,16 +29,30 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   const tabScrollRef = useRef<HTMLDivElement>(null);
 
   // Load channels data
   useEffect(() => {
     const loadChannels = async () => {
       try {
-        const response = await fetch('/channels.json');
-        const data = await response.json();
+        // Try to load India channels first (more channels), fallback to original
+        let data;
+        try {
+          const response = await fetch('/india_channels.json');
+          if (response.ok) {
+            data = await response.json();
+          } else {
+            throw new Error('India channels not found');
+          }
+        } catch (e) {
+          // Fallback to original channels
+          const response = await fetch('/channels.json');
+          data = await response.json();
+        }
+
         setChannels(data);
-        
+
         // Set first channel as selected
         const firstCategory = Object.keys(data)[0];
         if (data[firstCategory] && data[firstCategory].length > 0) {
@@ -47,6 +61,7 @@ export default function Home() {
         }
       } catch (error) {
         console.error('Failed to load channels:', error);
+        setPlaybackError('চ্যানেল লোড করতে ব্যর্থ');
       } finally {
         setLoading(false);
       }
@@ -69,10 +84,10 @@ export default function Home() {
     'News', 'News (AR)', 'News (ES)',
     'Entertainment', 'Drama',
     'Islamic', 'Religious',
-    'Kids',
+    'Kids', 'Animation',
     'Music',
     'Movies', 'Movie',
-    'English',
+    'English', 'General',
   ];
 
   const sortedCategories = Object.keys(channels).sort((a, b) => {
@@ -96,7 +111,7 @@ export default function Home() {
 
   const ImageWithFallback = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
     const hasError = imageErrors.has(src);
-    
+
     if (hasError) {
       return (
         <div
@@ -147,7 +162,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold">
             <span className="text-accent">Live</span> <span className="text-foreground">TV</span>
           </h1>
-          
+
           {/* Search Bar */}
           <div className="flex-1 max-w-md">
             <div className="relative">
@@ -203,6 +218,7 @@ export default function Home() {
                 onClick={() => {
                   setActiveCategory(category);
                   setSearchQuery('');
+                  setPlaybackError(null);
                   // Select first channel of category
                   if (channels[category] && channels[category].length > 0) {
                     setSelectedChannel(channels[category][0]);
@@ -236,55 +252,24 @@ export default function Home() {
         {selectedChannel && (
           <div className="sticky top-0 z-30 bg-secondary">
             <div className="container py-4">
-              {/* Video Player */}
-              <div className="relative bg-black rounded-lg overflow-hidden aspect-video mb-4">
-                {/* Channel Logo Background */}
-                <div className="absolute inset-0 opacity-20">
-                  <ImageWithFallback
-                    src={selectedChannel.logo}
-                    alt={selectedChannel.name}
-                    className="w-full h-full object-cover blur-xl"
+              {/* HLS Video Player */}
+              <div className="relative bg-black rounded-lg overflow-hidden aspect-video mb-4 border border-border">
+                {selectedChannel.url ? (
+                  <HLSPlayer
+                    src={selectedChannel.url}
+                    poster={selectedChannel.logo}
+                    autoplay={true}
+                    controls={true}
+                    className="w-full h-full"
                   />
-                </div>
-
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black"></div>
-
-                {/* Player Content */}
-                <div className="relative h-full flex flex-col items-center justify-center">
-                  {/* Channel Logo */}
-                  <div className="w-24 h-24 rounded-lg overflow-hidden bg-card border-2 border-accent mb-4 shadow-lg">
-                    <ImageWithFallback
-                      src={selectedChannel.logo}
-                      alt={selectedChannel.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  {/* Channel Info */}
-                  <div className="text-center mb-6">
-                    <div className="live-badge mb-3 justify-center">
-                      <div className="w-2 h-2 rounded-full bg-accent-foreground animate-pulse"></div>
-                      লাইভ
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center flex-col gap-4">
+                    <div className="text-center">
+                      <p className="text-foreground mb-2">স্ট্রিম উপলব্ধ নেই</p>
+                      <p className="text-muted-foreground text-sm">{selectedChannel.name}</p>
                     </div>
-                    <h2 className="text-3xl font-bold text-foreground mb-2">{selectedChannel.name}</h2>
-                    <p className="text-muted-foreground">{selectedChannel.group}</p>
                   </div>
-
-                  {/* Play Button */}
-                  <Button
-                    size="lg"
-                    className="bg-accent hover:bg-primary text-accent-foreground gap-2 mb-4"
-                    onClick={() => {
-                      if (selectedChannel.url) {
-                        window.open(selectedChannel.url, '_blank');
-                      }
-                    }}
-                  >
-                    <Play className="w-5 h-5" />
-                    এখনই দেখুন
-                  </Button>
-                </div>
+                )}
               </div>
 
               {/* Channel Details Card */}
@@ -319,7 +304,10 @@ export default function Home() {
               {filteredChannels.map((channel, index) => (
                 <div
                   key={`${channel.name}-${index}`}
-                  onClick={() => setSelectedChannel(channel)}
+                  onClick={() => {
+                    setSelectedChannel(channel);
+                    setPlaybackError(null);
+                  }}
                   className={`channel-card cursor-pointer group ${
                     selectedChannel?.name === channel.name ? 'ring-2 ring-accent' : ''
                   }`}
@@ -344,9 +332,8 @@ export default function Home() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (channel.url) {
-                          window.open(channel.url, '_blank');
-                        }
+                        setSelectedChannel(channel);
+                        setPlaybackError(null);
                       }}
                       className="p-3 rounded-full bg-accent text-accent-foreground hover:scale-110 transition-transform duration-300"
                     >
@@ -370,7 +357,7 @@ export default function Home() {
       <footer className="bg-card border-t border-border py-6 mt-auto">
         <div className="container text-center text-sm text-muted-foreground space-y-2">
           <p>
-            ডেভেলপার: <span className="font-semibold text-foreground">Rakib Mahmud Shihab</span> | 
+            ডেভেলপার: <span className="font-semibold text-foreground">Rakib Mahmud Shihab</span> |
             <a
               href="https://facebook.com/mahmud.sb.90"
               target="_blank"
