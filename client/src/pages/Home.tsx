@@ -244,10 +244,10 @@ export default function Home() {
             <div className="max-w-7xl mx-auto space-y-3">
               {/* Large Video Player with Red Border */}
               <div className="relative bg-black rounded-lg overflow-hidden aspect-video border-4 border-accent shadow-2xl">
-                {selectedChannel.url ? (
+                {selectedChannel.url && selectedChannel.url.trim() ? (
                   <HLSPlayer
                     src={selectedChannel.url}
-                    poster={selectedChannel.logo}
+                    poster={selectedChannel.logo || undefined}
                     autoplay={true}
                     controls={true}
                   />
@@ -262,7 +262,7 @@ export default function Home() {
               <div className="bg-[#1a1a1a] border border-[#333] rounded-lg p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1">
                   <ImageWithFallback
-                    src={selectedChannel.logo}
+                    src={selectedChannel.logo || ''}
                     alt={selectedChannel.name}
                     className="w-12 h-12 rounded object-cover"
                   />

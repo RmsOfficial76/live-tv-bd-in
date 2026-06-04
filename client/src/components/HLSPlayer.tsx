@@ -43,20 +43,20 @@ export const HLSPlayer: React.FC<HLSPlayerProps> = ({
       hls.loadSource(src);
       hls.attachMedia(video);
 
-      // Handle errors
+      // Handle errors silently
       hls.on(HLS.Events.ERROR, (event, data) => {
         if (data.fatal) {
           switch (data.type) {
             case HLS.ErrorTypes.NETWORK_ERROR:
-              console.error('Network error:', data);
+              // Silently retry on network error
               hls.startLoad();
               break;
             case HLS.ErrorTypes.MEDIA_ERROR:
-              console.error('Media error:', data);
+              // Silently recover media error
               hls.recoverMediaError();
               break;
             default:
-              console.error('Fatal error:', data);
+              // Silently handle other fatal errors
               break;
           }
         }
@@ -65,7 +65,9 @@ export const HLSPlayer: React.FC<HLSPlayerProps> = ({
       // Auto play when ready
       hls.on(HLS.Events.MANIFEST_PARSED, () => {
         if (autoplay) {
-          video.play().catch(err => console.error('Autoplay failed:', err));
+          video.play().catch(() => {
+            // Silently handle autoplay errors
+          });
         }
       });
 
@@ -76,7 +78,9 @@ export const HLSPlayer: React.FC<HLSPlayerProps> = ({
       // Native HLS support (Safari)
       video.src = src;
       if (autoplay) {
-        video.play().catch(err => console.error('Autoplay failed:', err));
+        video.play().catch(() => {
+          // Silently handle autoplay errors
+        });
       }
     }
   }, [src, autoplay]);
@@ -84,13 +88,16 @@ export const HLSPlayer: React.FC<HLSPlayerProps> = ({
   return (
     <video
       ref={videoRef}
-      poster={poster}
+      poster={poster || undefined}
       controls={controls}
       autoPlay={autoplay}
       className={`w-full h-full ${className}`}
       style={{
         backgroundColor: '#000',
         display: 'block',
+      }}
+      onError={() => {
+        // Silently handle video errors
       }}
     />
   );
