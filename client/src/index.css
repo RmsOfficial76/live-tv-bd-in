@@ -123,6 +123,14 @@
 }
 
 @layer components {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
   /* Dark Cinema Minimalism - Custom Components */
   
   /* Glowing accent borders on hover */
