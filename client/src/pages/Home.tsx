@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Play, Search, ChevronLeft, ChevronRight, Star, Home as HomeIcon } from 'lucide-react';
+import { Play, Search, Star, Home as HomeIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import HLSPlayer from '@/components/HLSPlayer';
@@ -19,11 +19,11 @@ interface ChannelsData {
 
 /**
  * Dark Cinema Minimalism Design
- * - Favorites section with LocalStorage
- * - Organized sections: Bangladeshi, Hindi Entertainment, Others
- * - Popular channels ranked first
- * - Auto-scroll to player on channel selection
+ * - All categories kept separate (Bangladeshi, Hindi Entertainment, Sports, News, etc.)
+ * - Popular channels ranked first within each category
+ * - Favorites system with LocalStorage
  * - Home logo link
+ * - Auto-scroll to player on channel selection
  */
 export default function Home() {
   const [channels, setChannels] = useState<ChannelsData>({});
@@ -218,7 +218,7 @@ export default function Home() {
           <button
             onClick={() => setLocation('/')}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            title="Go to Home"
+            title="হোমপেজে যান"
           >
             <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
               <HomeIcon className="w-6 h-6 text-accent-foreground" />
@@ -309,21 +309,10 @@ export default function Home() {
             <ChannelSection title="⭐ আমার পছন্দের চ্যানেল" channelsList={favoriteChannels} />
           )}
 
-          {/* Bangladeshi Channels */}
-          {channels['Bangladeshi'] && (
-            <ChannelSection title="🇧🇩 বাংলাদেশী চ্যানেল" channelsList={channels['Bangladeshi']} />
-          )}
-
-          {/* Hindi Entertainment */}
-          {channels['Hindi Entertainment'] && (
-            <ChannelSection title="🇮🇳 হিন্দি বিনোদন" channelsList={channels['Hindi Entertainment']} />
-          )}
-
-          {/* Other Categories */}
-          {Object.entries(channels).map(([category, channelsList]) => {
-            if (['Bangladeshi', 'Hindi Entertainment', 'Favorites'].includes(category)) return null;
-            return <ChannelSection key={category} title={category} channelsList={channelsList} />;
-          })}
+          {/* All Categories - Kept Separate */}
+          {Object.entries(channels).map(([category, channelsList]) => (
+            <ChannelSection key={category} title={category} channelsList={channelsList} />
+          ))}
         </div>
       </main>
 
