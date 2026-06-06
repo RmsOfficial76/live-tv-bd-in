@@ -55,21 +55,20 @@ export default function Home() {
         const saved = localStorage.getItem('livetv_favorites');
         if (saved) {
           const favList = JSON.parse(saved);
-          data['Favorites'] = data['Favorites'] || [];
+          const favoritesSet = new Set(favList);
+          data['Favorites'] = [];
+          
           // Find favorite channels from all categories
-          for (const category in data) {
-            if (category !== 'Favorites') {
-              data[category] = data[category].filter((ch: Channel) => {
-                if (favList.includes(ch.name)) {
-                  data['Favorites'].push(ch);
-                  return true;
-                }
-                return true;
-              });
+          const allChannels: Channel[] = Object.values(data).flat();
+          const uniqueFavorites = new Map<string, Channel>();
+          
+          allChannels.forEach(ch => {
+            if (favoritesSet.has(ch.name)) {
+              uniqueFavorites.set(ch.name, ch);
             }
-          }
-          // Remove duplicates from Favorites
-          data['Favorites'] = Array.from(new Map(data['Favorites'].map((ch: Channel) => [ch.name, ch])).values());
+          });
+          
+          data['Favorites'] = Array.from(uniqueFavorites.values());
         }
         
         setChannels(data);
@@ -135,9 +134,7 @@ export default function Home() {
     setSelectedChannel(channel);
     setActiveCategory(category);
     // Auto-scroll to player
-    setTimeout(() => {
-      playerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const ImageWithFallback = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
