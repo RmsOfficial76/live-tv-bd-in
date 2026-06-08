@@ -2571,6 +2571,34 @@
       "group": "Entertainment",
       "url": "http://103.72.101.252:8080/live/414.m3u8",
       "popularity": 0
+    },
+    {
+      "name": "Sony Sab HD",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/sony_sab_generic_300x300_20230419_1681902086652.webp",
+      "group": "Hindi Entertainment",
+      "url": "http://208.86.19.13:81/7022.stream/index.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Sony Max HD",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/sony_max_generic_300x300_20230419_1681902086652.webp",
+      "group": "Hindi Entertainment",
+      "url": "http://208.86.19.13:81/7066.stream/index.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Sony Max 2 HD",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/sony_max_2_generic_300x300_20230419_1681902086652.webp",
+      "group": "Hindi Entertainment",
+      "url": "http://208.86.19.13:81/7300.stream/index.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Sony Pal HD",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/sony_pal_generic_300x300_20230419_1681902086652.webp",
+      "group": "Hindi Entertainment",
+      "url": "http://149.71.34.166:8000/play/a075/index.m3u8",
+      "popularity": 0
     }
   ],
   "Kids": [
@@ -2705,6 +2733,62 @@
       "logo": "https://jiotvimages.cdn.jio.com/dare_images/images/zbcatun.png",
       "group": "Kids",
       "url": "https://server.zillarbarta.com/zbcatun/video.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Sony Yay (Hindi Cartoons)",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/2x_yay_generic_300x300_20230419_1681902086652.webp",
+      "group": "Kids",
+      "url": "https://sl.vodep39240327.workers.dev/channel/SONY%20YAY.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Pogo (Hindi Cartoons)",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/pogo_generic_300x300_20230419_1681902086652.webp",
+      "group": "Kids",
+      "url": "https://amg01448-samsungin-pogo-samsungin-dzccl.amagi.tv/playlist/amg01448-samsungin-pogo-samsungin/playlist.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Cartoon Network (Hindi)",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/cartoon_network_generic_300x300_20230419_1681902086652.webp",
+      "group": "Kids",
+      "url": "https://z5ams.akamaized.net/cartoonnetworkhindi/tracks-v1a1/index.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Gopal Bhar (Bengali)",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/sony_aath_generic_300x300_20230419_1681902086652.webp",
+      "group": "Kids",
+      "url": "https://server.zillarbarta.com/zbcatun/video.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Doraemon (Hindi)",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/hungama_generic_300x300_20230419_1681902086652.webp",
+      "group": "Kids",
+      "url": "http://149.71.34.166:8000/play/a075/index.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Motu Patlu (Hindi)",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/hungama_generic_300x300_20230419_1681902086652.webp",
+      "group": "Kids",
+      "url": "http://149.71.34.166:8000/play/a075/index.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Batul the Great (Bengali)",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/zee_bangla_generic_300x300_20230419_1681902086652.webp",
+      "group": "Kids",
+      "url": "https://server.zillarbarta.com/zbcatun/video.m3u8",
+      "popularity": 0
+    },
+    {
+      "name": "Tom & Jerry (Hindi)",
+      "logo": "https://images.jiocinema.com/images/channel/0x0/cartoon_network_generic_300x300_20230419_1681902086652.webp",
+      "group": "Kids",
+      "url": "https://live20.bozztv.com/giatvplayout7/giatv-208314/playlist.m3u8",
       "popularity": 0
     }
   ],
